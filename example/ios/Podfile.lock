@@ -1,0 +1,22 @@
+PODS:
+  - aliyun_voice (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - aliyun_voice (from `.symlinks/plugins/aliyun_voice/ios`)
+  - Flutter (from `.symlinks/flutter/ios`)
+
+EXTERNAL SOURCES:
+  aliyun_voice:
+    :path: ".symlinks/plugins/aliyun_voice/ios"
+  Flutter:
+    :path: ".symlinks/flutter/ios"
+
+SPEC CHECKSUMS:
+  aliyun_voice: 2e2721303ed9839384de042c3f42ad2f5d326c0e
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+
+PODFILE CHECKSUM: 7fb83752f59ead6285236625b82473f90b1cb932
+
+COCOAPODS: 1.7.3
