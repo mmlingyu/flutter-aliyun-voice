@@ -22,19 +22,19 @@ public class AliyunVoicePlugin implements MethodCallHandler {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     } else   if (call.method.equals("initTTS")) {
-       BaiduSDK.getBaiduSDKIntance().initTTs(registrar.activity());
+      BaiduSDK.getBaiduSDKIntance().initTTs(registrar.activity());
     }else   if (call.method.equals("attach")) {
-       BaiduSDK.getBaiduSDKIntance().attchActivity(registrar.activity());
+      BaiduSDK.getBaiduSDKIntance().attchActivity(registrar.activity());
     }    else   if (call.method.equals("speak")) {
-       BaiduSDK.getBaiduSDKIntance().speak(call.argument("content").toString(),true,false,false,false);
+      BaiduSDK.getBaiduSDKIntance().speak(call.argument("content").toString(),true,false,false,false);
     }else if(call.method.equals("release")){
-        BaiduSDK.getBaiduSDKIntance().release();
+      BaiduSDK.getBaiduSDKIntance().release();
     }
     else if(call.method.equals("stop")){
-        BaiduSDK.getBaiduSDKIntance().stop();
+      BaiduSDK.getBaiduSDKIntance().stop();
     }
     else if(call.method.equals("pauseOrResume")){
-        BaiduSDK.getBaiduSDKIntance().pauseOrResume(call.argument("status").equals("pause")?true:false);
+      BaiduSDK.getBaiduSDKIntance().pauseOrResume(call.argument("status").equals("pause")?true:false);
     }
     else {
       result.notImplemented();

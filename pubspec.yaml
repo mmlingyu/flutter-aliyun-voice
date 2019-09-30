@@ -1,8 +1,8 @@
 name: aliyun_voice
 description: A tts Flutter plugin of aliyun
 version: 0.0.1
-author: gaojingtao
-homepage: https://github.com/mmlingyu
+author: gaojingtao <gaomao6848@qq.com>
+homepage: https://github.com/mmlingyu/flutter-aliyun-voice
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

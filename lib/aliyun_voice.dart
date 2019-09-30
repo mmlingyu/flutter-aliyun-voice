@@ -20,6 +20,11 @@ class AliyunVoice {
      _channel.invokeMethod('stop');
   }
   static void release() async {
-     _channel.invokeMethod('release');
+    _channel.invokeMethod('release');
+  }
+
+  static void pauseOrResume(bool isPause) async {
+    print(isPause?"pause":"resume" +" ----> ");
+    _channel.invokeMethod('pauseOrResume',{'status':isPause?"pause":"resume"});
   }
 }

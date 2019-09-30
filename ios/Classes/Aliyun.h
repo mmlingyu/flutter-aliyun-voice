@@ -11,5 +11,10 @@
 
 #endif /* Aliyun_h */
 @interface Aliyun : NSObject
-+ (void) initTTS;
+- (void) initTTS;
+- (void)speak :(NSString*)content;
+- (void)pauseOrResume : (NSString*) isPause;
+- (void)stop;
+- (void)releaseIt;
+@property(nonatomic,strong) NSString *content;
 @end
