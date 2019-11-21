@@ -6,8 +6,29 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+  	<dict>
+    <key>NSExceptionDomains</key>
+    <dict>
+        <key>qcloud.com</key>
+        <dict>
+            <key>NSExceptionAllowsInsecureHTTPLoads</key>
+            <true/>
+            <key>NSExceptionMinimumTLSVersion</key>
+            <string>TLSv1.2</string>
+            <key>NSIncludesSubdomains</key>
+            <true/>
+            <key>NSRequiresCertificateTransparency</key>
+            <false/>
+        </dict>
+    </dict>
+    </dict>
+
 	<key>LSApplicationCategoryType</key>
 	<string></string>
+	<!-- 麦克风 --> 
+	<key>NSMicrophoneUsageDescription</key> 
+	<string>App需要您的同意,才能访问麦克风</string> 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

@@ -1,0 +1,6 @@
+framework module QCloudSDK {
+  umbrella header "QCloudSDK.h"
+
+  export *
+  module * { export * }
+}

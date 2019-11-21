@@ -15,7 +15,10 @@ A tts Flutter plugin of aliyun
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-
+  s.static_framework = true
+  s.preserve_paths = '*.a'
+  s.vendored_frameworks = ['AliyunNlsSdk.framework']
+  s.vendored_libraries  = 'libQCloud_TTS.a'
   s.ios.deployment_target = '8.0'
 end
 

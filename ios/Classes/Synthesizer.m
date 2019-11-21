@@ -47,6 +47,8 @@
     [_nlsClient setLog:NULL logLevel:LOGINFO];
 }
 
+
+
 -(long )getTime{
    
     return [self getDateTimeTOMilliSeconds:[NSDate date]];

@@ -7,12 +7,15 @@ import 'package:aliyun_voice/aliyun_voice.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
+  String msg="";
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  static const messageChannel = const BasicMessageChannel(
+      'com.xiaoshunzi.ainong/event', JSONMessageCodec());
 
   @override
   void initState() {
@@ -20,8 +23,20 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
    // AliyunVoice.attach();
      AliyunVoice.initTTS();
+    receiveMessage();
   }
 
+  //接收消息监听
+  void receiveMessage() {
+    messageChannel.setMessageHandler((result) async {
+      //解析 原生发给 Flutter 的参数
+      this.widget.msg=result.toString();
+      setState(() {
+
+      });
+      //return 'Flutter 已收到消息';
+    });
+  }
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     String platformVersion;
@@ -50,6 +65,10 @@ class _MyAppState extends State<MyApp> {
      AliyunVoice.speak("春眠不觉晓 处处闻啼鸟 夜来风雨声 花落知多少");
   }
 
+  void _startASR(){
+    AliyunVoice.startASR();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -57,16 +76,20 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: GestureDetector(onTap:_speak ,child:Center(
-          child: Text('设备Running on: $_platformVersion\n',style: TextStyle(fontSize: 30),),
+        body: Column(children: <Widget>[ GestureDetector(onTap:_speak ,child:Center(
+          child: Text('语音合成 on: $_platformVersion\n',style: TextStyle(fontSize: 30),),
         ),
-      )),
-    );
+      ), GestureDetector(onTap:_startASR ,child:Center(
+          child: Text('语音合成 on: '+this.widget.msg,style: TextStyle(fontSize: 30),),
+         )
+      )]
+    )));
   }
 
   @override
   void dispose() {
     super.dispose();
     AliyunVoice.release();
+    AliyunVoice.stopASR();
   }
 }

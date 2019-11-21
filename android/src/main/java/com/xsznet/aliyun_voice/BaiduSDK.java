@@ -1,9 +1,11 @@
 package com.xsznet.aliyun_voice;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.baidu.tts.auth.AuthInfo;
@@ -15,8 +17,20 @@ import com.baidu.tts.client.TtsMode;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Map;
 
-public class BaiduSDK {
+import com.xsznet.aliyun_voice.core.mini.AutoCheck;
+import com.xsznet.aliyun_voice.core.params.CommonRecogParams;
+import com.xsznet.aliyun_voice.core.params.OnlineRecogParams;
+import com.xsznet.aliyun_voice.core.recog.IStatus;
+import com.xsznet.aliyun_voice.core.recog.MyRecognizer;
+import com.xsznet.aliyun_voice.core.recog.listener.IRecogListener;
+import com.xsznet.aliyun_voice.core.recog.listener.MessageStatusRecogListener;
+import com.xsznet.aliyun_voice.core.util.MyLogger;
+
+import org.greenrobot.eventbus.EventBus;
+
+public class BaiduSDK implements IStatus {
     protected String appId = "16455084";
     protected String appKey = "7HGDv5wF0zVO2tUYmebPpa6f";
 
@@ -24,10 +38,13 @@ public class BaiduSDK {
     private TtsMode ttsMode = TtsMode.ONLINE;
     // ===============初始化参数设置完毕，更多合成参数请至getParams()方法中设置 =================
     protected SpeechSynthesizer mSpeechSynthesizer;
-    protected Handler mainHandler;
+    protected Handler mainHandler,astHandler;
     SpeechSynthesizerListener listener;
     private static WeakReference<Activity> activityWeakReference;
+    private final CommonRecogParams apiParams = new OnlineRecogParams();
+    protected MyRecognizer myRecognizer;
 
+    protected int asrstatus;
 
     static class BaiduSDKHolder{
         static final BaiduSDK baidu_sdk = new BaiduSDK();
@@ -40,6 +57,145 @@ public class BaiduSDK {
         activityWeakReference = new WeakReference<>(activity);
     }
 
+    private void initASR(Activity activity){
+        apiParams.initSamplePath(activity);
+        asrstatus = STATUS_NONE;
+        astHandler = new Handler() {
+
+            /*
+             * @param msg
+             */
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                handleMsg(msg);
+            }
+
+        };
+        MyLogger.setHandler(astHandler);
+        IRecogListener listener = new MessageStatusRecogListener(astHandler);
+        // DEMO集成步骤 1.1 1.3 初始化：new一个IRecogListener示例 & new 一个 MyRecognizer 示例,并注册输出事件
+        myRecognizer = new MyRecognizer(activity, listener);
+    }
+
+    protected void handleMsg(Message msg) {
+
+        switch (msg.what) { // 处理MessageStatusRecogListener中的状态回调
+            case STATUS_FINISHED:
+                if (msg.arg2 == 1) {
+                    //txtResult.setText(msg.obj.toString());
+                    EventBus.getDefault().post(msg.obj.toString());
+                }
+                asrstatus = msg.what;
+                //updateBtnTextByStatus();
+                break;
+            case STATUS_NONE:
+            case STATUS_READY:
+            case STATUS_SPEAKING:
+            case STATUS_RECOGNITION:
+                asrstatus = msg.what;
+               //updateBtnTextByStatus();
+                break;
+            default:
+                break;
+
+        }
+    }
+
+    public void startASR() {
+        switch (asrstatus) {
+            case STATUS_NONE: // 初始状态
+                startBaisuASR();
+                asrstatus = STATUS_WAITING_READY;
+
+                break;
+            case STATUS_WAITING_READY: // 调用本类的start方法后，即输入START事件后，等待引擎准备完毕。
+            case STATUS_READY: // 引擎准备完毕。
+            case STATUS_SPEAKING: // 用户开始讲话
+            case STATUS_FINISHED: // 一句话识别语音结束
+            case STATUS_RECOGNITION: // 识别中
+                stopASR();
+                asrstatus = STATUS_STOPPED; // 引擎识别中
+                break;
+            case STATUS_LONG_SPEECH_FINISHED: // 长语音识别结束
+            case STATUS_STOPPED: // 引擎识别中
+                cancelASR();
+                asrstatus = STATUS_NONE; // 识别结束，回到初始状态
+                break;
+            default:
+                break;
+        }
+    }
+
+    protected Map<String, Object> fetchParams() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(activityWeakReference.get());
+        //  上面的获取是为了生成下面的Map， 自己集成时可以忽略
+        Map<String, Object> params = apiParams.fetch(sp);
+        //  集成时不需要上面的代码，只需要params参数。
+        return params;
+    }
+
+        /**
+         * 开始录音，点击“开始”按钮后调用。
+         * 基于DEMO集成2.1, 2.2 设置识别参数并发送开始事件
+         */
+        protected void startBaisuASR() {
+            // DEMO集成步骤2.1 拼接识别参数： 此处params可以打印出来，直接写到你的代码里去，最终的json一致即可。
+            final Map<String, Object> params = fetchParams();
+            // params 也可以根据文档此处手动修改，参数会以json的格式在界面和logcat日志中打印
+            Log.i("ASR", "设置的start输入参数：" + params);
+            // 复制此段可以自动检测常规错误
+            (new AutoCheck(activityWeakReference.get(), new Handler() {
+                public void handleMessage(Message msg) {
+                    if (msg.what == 100) {
+                        AutoCheck autoCheck = (AutoCheck) msg.obj;
+                        synchronized (autoCheck) {
+                            String message = autoCheck.obtainErrorMessage(); // autoCheck.obtainAllMessage();
+                            //txtLog.append(message + "\n");
+                            ; // 可以用下面一行替代，在logcat中查看代码
+                             Log.w("AutoCheckMessage", message);
+                        }
+                    }
+                }
+            }, false)).checkAsr(params);
+
+            // 这里打印出params， 填写至您自己的app中，直接调用下面这行代码即可。
+            // DEMO集成步骤2.2 开始识别
+            myRecognizer.start(params);
+        }
+
+        /**
+         * 开始录音后，手动点击“停止”按钮。
+         * SDK会识别不会再识别停止后的录音。
+         * 基于DEMO集成4.1 发送停止事件 停止录音
+         */
+        protected void stopASR() {
+
+            myRecognizer.stop();
+        }
+
+        /**
+         * 开始录音后，手动点击“取消”按钮。
+         * SDK会取消本次识别，回到原始状态。
+         * 基于DEMO集成4.2 发送取消事件 取消本次识别
+         */
+        protected void cancelASR(){
+
+            myRecognizer.cancel();
+        }
+
+        /**
+         * 销毁时需要释放识别资源。
+         */
+        protected void releaseASR() {
+
+            // 如果之前调用过myRecognizer.loadOfflineEngine()， release()里会自动调用释放离线资源
+            // 基于DEMO5.1 卸载离线资源(离线时使用) release()方法中封装了卸载离线资源的过程
+            // 基于DEMO的5.2 退出事件管理器
+            myRecognizer.release();
+
+        }
+
     /**
      * 注意此处为了说明流程，故意在UI线程中调用。
      * 实际集成中，该方法一定在新线程中调用，并且该线程不能结束。具体可以参考NonBlockSyntherizer的写法
@@ -49,6 +205,7 @@ public class BaiduSDK {
         activityWeakReference = new WeakReference<>(activity);
         LoggerProxy.printable(true); // 日志打印在logcat中
         boolean isMix = ttsMode.equals(TtsMode.MIX);
+        initASR(activity);
         boolean isSuccess;
         if (isMix) {
             // 检查2个离线资源是否可读

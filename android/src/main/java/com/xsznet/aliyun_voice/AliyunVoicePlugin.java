@@ -36,6 +36,12 @@ public class AliyunVoicePlugin implements MethodCallHandler {
     else if(call.method.equals("pauseOrResume")){
       BaiduSDK.getBaiduSDKIntance().pauseOrResume(call.argument("status").equals("pause")?true:false);
     }
+    else if(call.method.equals("startASR")){
+      BaiduSDK.getBaiduSDKIntance().startASR();
+    }
+    else if(call.method.equals("stopASR")){
+      BaiduSDK.getBaiduSDKIntance().stopASR();
+    }
     else {
       result.notImplemented();
     }

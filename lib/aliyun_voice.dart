@@ -23,6 +23,13 @@ class AliyunVoice {
     _channel.invokeMethod('release');
   }
 
+  static void startASR() async {
+    _channel.invokeMethod('startASR');
+  }
+  static void stopASR() async {
+    _channel.invokeMethod('stopASR');
+  }
+
   static void pauseOrResume(bool isPause) async {
     print(isPause?"pause":"resume" +" ----> ");
     _channel.invokeMethod('pauseOrResume',{'status':isPause?"pause":"resume"});

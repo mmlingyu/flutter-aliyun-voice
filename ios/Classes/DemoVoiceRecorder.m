@@ -131,20 +131,18 @@ NSString * const kDemoVoiceRecorderErrorDomain = @"NlsVoiceRecorderErrorDomain";
     
     self.state = STATE_STOP;
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self _stopAudioQueue];
-        [self _disposeAudioQueue];
-        [[AVAudioSession sharedInstance] setCategory:self.originCategory error:nil];
-        [[AVAudioSession sharedInstance] setActive:NO error:nil];
-        self.bufferedVoiceData = nil;
+    [self _stopAudioQueue];
+    [self _disposeAudioQueue];
+    [[AVAudioSession sharedInstance] setCategory:self.originCategory error:nil];
+    [[AVAudioSession sharedInstance] setActive:NO error:nil];
+    self.bufferedVoiceData = nil;
+    
+    if(shouldNotify && self->_delegate){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self->_delegate recorderDidStop];
+        });
         
-        if(shouldNotify && self->_delegate){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self->_delegate recorderDidStop];
-            });
-            
-        }
-    });
+    }
 }
 
 -(BOOL)isStarted{
